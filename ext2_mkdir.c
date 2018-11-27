@@ -1,5 +1,5 @@
 #include "helpers.h"
-extern int check_input_path(char* expected_path);
+
 unsigned char *disk;
 
 
@@ -18,8 +18,8 @@ int main(int argc, char *argv[]){
     char *expected_path = argv[2];
 
     //check path
-    if (check_input_path(expected_path) != 1){
-      return check_input_path(expected_path);
+    if (check_input_path(expected_path,"ext2_mkdir") != 1){
+      return check_input_path(expected_path,"ext2_mkdir");
     }
 
     
