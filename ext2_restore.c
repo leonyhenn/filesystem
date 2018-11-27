@@ -1,11 +1,18 @@
-#include "helpers.h"
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include "ext2.h"
 
 unsigned char *disk;
 
 
 int main(int argc, char *argv[]){
     if(argc != 3){
-      fprintf(stderr, "Usage: ext2_mkdir <image file name> <path>\n");
+      fprintf(stderr, "Usage: ext2_mkdir <image file name> <path to file>\n");
       exit(1); 
     }
     int fd = open(argv[1], O_RDWR);
@@ -14,14 +21,4 @@ int main(int argc, char *argv[]){
         perror("mmap");
         exit(1);
     }
-    
-    char *expected_path = argv[2];
-
-    //check path
-    if (check_input_path(expected_path) != 1){
-      return check_input_path(expected_path);
-    }
-
-    
-
 }
