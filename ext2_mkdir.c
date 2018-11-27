@@ -18,9 +18,13 @@ int main(int argc, char *argv[]){
     char *expected_path = argv[2];
 
     //check path
-    if (check_input_path(expected_path,"ext2_mkdir") != 1){
-      return check_input_path(expected_path,"ext2_mkdir");
-    }
+    check_input_path(expected_path,"ext2_mkdir");
+
+    struct ext2_group_desc *gd = (struct ext2_group_desc *) (disk + 2 * EXT2_BLOCK_SIZE);
+
+    //get parent dir
+    get_parent_directory(expected_path);
+    printf("%s\n",parent_dir );
 
     
 
