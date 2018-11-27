@@ -1,5 +1,5 @@
 #include "helpers.h"
-
+extern int check_input_path(char* expected_path);
 unsigned char *disk;
 
 
