@@ -5,14 +5,12 @@ int check_input_path(char* expected_path,char* usage){
     //if path is root dir, exit
     if (strcmp(expected_path,"/") == 0){
     	fprintf(stderr, "Cannot recreate root directory\n");
-    	return -EEXIST;
     	exit(1);
     }
     
     //if path does not start with "/", exit
     if(expected_path[0] != '/'){
       fprintf(stderr, "Absolute path should start by '/'\n");
-      return -EEXIST;
       exit(1); 
     }
   }
@@ -21,7 +19,6 @@ int check_input_path(char* expected_path,char* usage){
 }
 
 char* get_parent_directory(char* expected_path){
-
   unsigned long expected_path_size = strlen(expected_path);
   
   //copy original expected_path to a temp variable
