@@ -20,7 +20,7 @@ int check_input_path(char* expected_path,char* usage){
   return 1;
 }
 
-char* get_parent_path(char* expected_path){
+char* get_parent_directory(char* expected_path){
 
   unsigned long expected_path_size = strlen(expected_path);
   

@@ -9,4 +9,4 @@
 #include "ext2.h"
 #include "errno.h"
 int check_input_path(char* expected_path,char* usage);
-char* get_parent_path(char* expected_path);
+char* get_parent_directory(char* expected_path);

@@ -23,7 +23,7 @@ int main(int argc, char *argv[]){
     struct ext2_group_desc *gd = (struct ext2_group_desc *) (disk + 2 * EXT2_BLOCK_SIZE);
 
     //get parent dir
-    get_parent_directory(expected_path);
+    char *parent_dir = get_parent_directory(expected_path);
     printf("%s\n",parent_dir );
 
     
