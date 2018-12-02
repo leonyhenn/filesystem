@@ -1,0 +1,11 @@
+gcc ext2_mkdir.c helpers.c -o ext2_mkdir
+gcc ext2_cp.c helpers.c -o ext2_cp
+gcc ext2_ln.c helpers.c -o ext2_ln
+gcc ext2_rm.c helpers.c -o ext2_rm
+gcc ext2_restore.c helpers.c -o ext2_restore
+gcc readimage.c -o readimage
+./ext2_mkdir multilevel.img /level1/level2/level3
+./ext2_cp multilevel.img /Users/study/Test/filesystem/file.txt /level1/file.txt
+./ext2_ln multilevel.img /afile /level1/a_2_file
+./ext2_rm multilevel.img /level1/level2/bfile
+./ext2_restore multilevel.img /afile
