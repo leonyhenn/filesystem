@@ -236,7 +236,6 @@ void init_entry(struct ext2_dir_entry *entry, int inode_number, int rec_len, cha
   strncpy(entry->name,name,strlen(name));
   entry->file_type = file_type;
   inodes[inode_number].i_links_count += 1; 
-  printf("init_entry%s , %d,%d\n",entry->name,inode_number,inodes[inode_number].i_links_count);
 }
 int add_child(int parent_inode,char *child_name,int child_type,int child_inode){
   printf("%d , %s, %d\n",parent_inode,child_name,child_inode );
