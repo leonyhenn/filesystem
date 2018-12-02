@@ -16,7 +16,7 @@ struct ext2_inode *inodes;
 
 int main(int argc, char *argv[]){
     if(argc < 4 || argc > 5){
-      fprintf(stderr, "Usage: ext2_cp <image file name> <source path> <dest path> [-s for symlink]\n");
+      fprintf(stderr, "Usage: ext2_cp <image file name> [-s for symlink] <source path> <dest path> \n");
       exit(1); 
     }
     int fd = open(argv[1], O_RDWR);
@@ -25,6 +25,10 @@ int main(int argc, char *argv[]){
         perror("mmap");
         exit(1);
     }
+    char *source_path;
+    char *dest_path;
+    source_path = argv[2];
+    dest_path = argv[3];
     int symlink = 0;
     if(argc == 5){
         if(!(strcmp(argv[2],"-s") == 0)){
@@ -32,6 +36,8 @@ int main(int argc, char *argv[]){
             exit(1);
         }else{
             symlink = 1;    
+            source_path = argv[3];
+            dest_path = argv[4];
         }
     }
 
@@ -42,8 +48,8 @@ int main(int argc, char *argv[]){
     inode_bitmap =(unsigned char*) (disk + EXT2_BLOCK_SIZE * gd->bg_inode_bitmap);
     inodes   = (struct ext2_inode *)(disk + EXT2_BLOCK_SIZE * gd->bg_inode_table );
 
-    char *source_path = argv[2];
-    char *dest_path = argv[3];
+    printf("%s\n",source_path );
+    printf("%s\n",dest_path);
 
     //check path
     check_input_path(source_path,"ext2_ln");
@@ -137,6 +143,7 @@ int main(int argc, char *argv[]){
                 if(blocks_needed == 0) {
                     return 0;
                 }
+                inodes[soft_inode].i_blocks += 2;
                 indirect_block[i] = get_new_block() + 1;
                 if(bytes_needed < EXT2_BLOCK_SIZE){
                     memcpy(disk + inodes[soft_inode].i_block[i] * EXT2_BLOCK_SIZE, source_path, bytes_needed);
