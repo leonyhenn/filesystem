@@ -27,8 +27,8 @@ int main(int argc, char *argv[]){
     }
     int symlink = 0;
     if(argc == 5){
-        if(!(strcmp(argv[4],"-s") == 0)){
-            fprintf(stderr, "Usage: ext2_cp <image file name> <source path> <dest path> [-s for symlink]\n");
+        if(!(strcmp(argv[2],"-s") == 0)){
+            fprintf(stderr, "Usage: ext2_cp <image file name> [-s for symlink] <source path> <dest path> \n");
             exit(1);
         }else{
             symlink = 1;    
