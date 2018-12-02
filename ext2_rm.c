@@ -70,19 +70,18 @@ int main(int argc, char *argv[]){
 
 }
 void remove_file(int parent_inode,int victim_inode){
+    inodes[victim_inode].i_links_count -= 1;
     for(int j = 0; j < (inodes[parent_inode].i_blocks / 2); j++) {
         int rec = 0;
         struct ext2_dir_entry *prev = NULL;
         while(rec < EXT2_BLOCK_SIZE){
             struct ext2_dir_entry *entry = (struct ext2_dir_entry*) (disk + 1024* inodes[parent_inode].i_block[j] + rec);
-            printf("%d %d\n",entry->inode,victim_inode );
             if(entry->inode == victim_inode){
                 if(prev == NULL){
                     entry->inode = 0;
                 }else{
                     prev->rec_len += entry->rec_len;
                 }
-              
             }
             rec += entry->rec_len;
             prev = entry;
@@ -92,9 +91,9 @@ void remove_file(int parent_inode,int victim_inode){
     }
 }
 void free_block_bitmap(int block){
-
+  printf("%d\n",block);
   if(!(block_bitmap[block / 8] >> (block % 8) & 1)){
-    fprintf(stderr, "this block is not in use.\n" );
+    fprintf(stderr, "%d: this block is not in use.\n",block );
     exit(EINVAL);
   }
   block_bitmap[block / 8] &=  (~(1<<(block % 8))); 
@@ -120,6 +119,7 @@ void free_inode(int inode){
     free_inode_bitmap(inode);
     for(int i = 0; i < 12; ++i) {
         if(inodes[inode].i_block[i] != 0){
+            printf("%d %d\n",i,inodes[inode].i_block[i] - 1);
             free_block_bitmap(inodes[inode].i_block[i] - 1);
         }else{
             return;
@@ -131,7 +131,10 @@ void free_inode(int inode){
             if(indirect_block[i] == 0) {
                 return;
             }
-            free_block_bitmap(indirect_block[i]);
+            printf("%d %d\n",i,(indirect_block[i] - 1));
+            free_block_bitmap(indirect_block[i] - 1);
         }
+        free_block_bitmap((inodes[inode].i_block)[12]);
     }
+
 }
