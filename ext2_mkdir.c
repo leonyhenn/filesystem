@@ -1,6 +1,19 @@
+#include <stdio.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include "ext2.h"
 #include "helpers.h"
 
 unsigned char *disk;
+struct ext2_super_block *sb;
+struct ext2_group_desc *gd; 
+unsigned char* block_bitmap;
+unsigned char* inode_bitmap;
+struct ext2_inode *inodes;  
 
 
 int main(int argc, char *argv[]){
@@ -17,17 +30,30 @@ int main(int argc, char *argv[]){
     
     char *expected_path = argv[2];
 
+    //init global variables
+    sb = (struct ext2_super_block *)(disk + 1024);
+    gd  = (struct ext2_group_desc *) (disk + 2 * EXT2_BLOCK_SIZE);
+    block_bitmap =(unsigned char*) (disk + EXT2_BLOCK_SIZE * gd->bg_block_bitmap);
+    inode_bitmap =(unsigned char*) (disk + EXT2_BLOCK_SIZE * gd->bg_inode_bitmap);
+    inodes   = (struct ext2_inode *)(disk + EXT2_BLOCK_SIZE * gd->bg_inode_table );
+    
     //check path
     check_input_path(expected_path,"ext2_mkdir");
 
-    struct ext2_group_desc *gd = (struct ext2_group_desc *) (disk + 2 * EXT2_BLOCK_SIZE);
-
     //get parent dir
     char *parent_dir = get_parent_directory(expected_path);
-    printf("%s\n",parent_dir );
+    char *child_name = get_child_name(expected_path);
 
+    //recursively get parent inode, return error if any part is missing
+    int parent_inode = find_inode(parent_dir,EXT2_S_IFDIR);
+    if(parent_inode < 0){
+        exit(ENOENT);
+    }
     
-
+    int child_inode = add_child(parent_inode,child_name,EXT2_S_IFDIR,-1);
     
-
+    gd->bg_used_dirs_count++; 
+    add_child(child_inode,".",EXT2_S_IFDIR,child_inode);
+    add_child(child_inode,"..",EXT2_S_IFDIR,parent_inode);
+    return 0;
 }
