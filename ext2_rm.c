@@ -119,7 +119,6 @@ void free_inode(int inode){
     free_inode_bitmap(inode);
     for(int i = 0; i < 12; ++i) {
         if(inodes[inode].i_block[i] != 0){
-            printf("%d %d\n",i,inodes[inode].i_block[i] - 1);
             free_block_bitmap(inodes[inode].i_block[i] - 1);
         }else{
             return;
@@ -129,12 +128,13 @@ void free_inode(int inode){
         int *indirect_block = (int *)(disk +  EXT2_BLOCK_SIZE * (inodes[inode].i_block)[12]);
         for(int i = 0; i < 256; i++) {
             if(indirect_block[i] == 0) {
+                free_block_bitmap(inodes[inode].i_block[12] - 1);
                 return;
             }
-            printf("%d %d\n",i,(indirect_block[i] - 1));
             free_block_bitmap(indirect_block[i] - 1);
         }
-        free_block_bitmap((inodes[inode].i_block)[12]);
+        
     }
+    
 
 }
