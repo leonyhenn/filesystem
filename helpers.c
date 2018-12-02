@@ -180,18 +180,18 @@ int get_new_inode(){
   }
   return result;
 }
-int find_last_dir(struct ext2_dir_entry *entry, int found){
+int find_last_dir(struct ext2_dir_entry *entry, int found, int rec){
   //if dir_entry size + name_len is mult of 4
   if((sizeof(struct ext2_dir_entry)+entry->name_len) % 4 == 0){
     //then rec_len are supposed to be exact same as dir_entry size + name_len
-    if(entry->rec_len > (sizeof(struct ext2_dir_entry)+entry->name_len)){
+    if(entry->rec_len > (sizeof(struct ext2_dir_entry)+entry->name_len) && (rec + entry->rec_len == EXT2_BLOCK_SIZE)){
       //if not, then this entry is the last entry
       found = 1;
     }
   //if dir_entry size + name_len is not mult of 4
   }else{
     //then rec_len are supposed to have closest 4B
-    if(entry->rec_len > ((sizeof(struct ext2_dir_entry)+entry->name_len) + 4 - ((sizeof(struct ext2_dir_entry)+entry->name_len) % 4))){
+    if(entry->rec_len > ((sizeof(struct ext2_dir_entry)+entry->name_len) + 4 - ((sizeof(struct ext2_dir_entry)+entry->name_len) % 4)) && (rec + entry->rec_len == EXT2_BLOCK_SIZE)){
       //if bigger than that, this is the last
       found = 1;
     }
@@ -255,7 +255,7 @@ int add_child(int parent_inode,char *child_name,int child_type,int child_inode){
         }
         
         int found = 0;
-        found = find_last_dir(entry, found);
+        found = find_last_dir(entry, found, rec);
         
         if(found){
           //rec + dir_entry size + name_len + new dir_entry size + new name_len cannot fit into a block, jump out of the block
@@ -268,12 +268,12 @@ int add_child(int parent_inode,char *child_name,int child_type,int child_inode){
             entry->rec_len = ((sizeof(struct ext2_dir_entry)+entry->name_len) + 4 - ((sizeof(struct ext2_dir_entry)+entry->name_len) % 4));
             rec += entry->rec_len;
             struct ext2_dir_entry *child_entry = (struct ext2_dir_entry*) (disk + 1024* inodes[parent_inode].i_block[j] + rec);
+
             //get a new inode
             if(child_inode < 0){
               child_inode = get_new_inode();
               init_inode(child_inode,child_type);
             }
-            
             init_entry(child_entry, child_inode, EXT2_BLOCK_SIZE - rec, child_name, inode_dir_type_switch(child_type));
             
             allocated = 1;
