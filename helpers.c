@@ -228,7 +228,6 @@ int block_can_fit(int rec,int last_name_len,int new_name_len){
 }
 void init_inode(int inode_number, int inode_type){
   inodes[inode_number].i_mode = inode_type;
-  inodes[inode_number].i_links_count += 1;
 }
 void init_entry(struct ext2_dir_entry *entry, int inode_number, int rec_len, char* name, int file_type){
   entry->inode = inode_number + 1;
@@ -236,9 +235,11 @@ void init_entry(struct ext2_dir_entry *entry, int inode_number, int rec_len, cha
   entry->name_len = strlen(name);
   strncpy(entry->name,name,strlen(name));
   entry->file_type = file_type;
-  (inodes+inode_number)->i_links_count++; 
+  inodes[inode_number].i_links_count += 1; 
+  printf("init_entry%s , %d,%d\n",entry->name,inode_number,inodes[inode_number].i_links_count);
 }
 int add_child(int parent_inode,char *child_name,int child_type,int child_inode){
+  printf("%d , %s, %d\n",parent_inode,child_name,child_inode );
   char type;
   int allocated = 0;
   
@@ -275,6 +276,7 @@ int add_child(int parent_inode,char *child_name,int child_type,int child_inode){
             }
             
             init_entry(child_entry, child_inode, EXT2_BLOCK_SIZE - rec, child_name, inode_dir_type_switch(child_type));
+            
             allocated = 1;
             return child_inode;
           }
@@ -297,6 +299,7 @@ int add_child(int parent_inode,char *child_name,int child_type,int child_inode){
     }
     
     init_entry(child_entry, child_inode, EXT2_BLOCK_SIZE, child_name, inode_dir_type_switch(child_type));
+    
     return child_inode;
   }
   fprintf(stderr, "add_child failed\n");
