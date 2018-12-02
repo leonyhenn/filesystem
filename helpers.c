@@ -238,7 +238,6 @@ void init_entry(struct ext2_dir_entry *entry, int inode_number, int rec_len, cha
   inodes[inode_number].i_links_count += 1; 
 }
 int add_child(int parent_inode,char *child_name,int child_type,int child_inode){
-  printf("%d , %s, %d\n",parent_inode,child_name,child_inode );
   char type;
   int allocated = 0;
   
