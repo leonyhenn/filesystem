@@ -18,7 +18,7 @@ int check_input_path(char* expected_path,char* usage);
 char* get_parent_directory(char* expected_path);
 char* get_child_name(char* expected_path);
 int find_inode(char* path,int type);
-int find_last_dir(struct ext2_dir_entry *entry, int found);
+int find_last_dir(struct ext2_dir_entry *entry, int found, int rec);
 struct ext2_dir_entry* inode_find_dir(char* cur_dir,int cur_inode,int type);
 int add_child(int parent_inode,char *child_name,int child_type,int child_inode);
 int get_new_block();
