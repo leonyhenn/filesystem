@@ -42,7 +42,7 @@ int main(int argc, char *argv[]){
 
     //source file handling
     FILE *source_file;
-    if((source_file = fopen(argv[2], "r")) == NULL) {
+    if((source_file = fopen(argv[2], "rb")) == NULL) {
         fprintf(stderr, "Can't open source file %s\n", path_to_source_file);
         exit(ENOENT);
     }
@@ -97,7 +97,6 @@ void copy_file(int dest_file_child_inode, FILE *source_file,int blocks_needed){
         inodes[dest_file_child_inode].i_blocks += 2;
         int bytes_read = fread (disk + inodes[dest_file_child_inode].i_block[i] * EXT2_BLOCK_SIZE,1,EXT2_BLOCK_SIZE,source_file);
         inodes[dest_file_child_inode].i_size += bytes_read;
-        printf("%d\n",inodes[dest_file_child_inode].i_size);
         blocks_needed -= 1;
 
     }
@@ -111,6 +110,7 @@ void copy_file(int dest_file_child_inode, FILE *source_file,int blocks_needed){
                 return;
             }
             indirect_block[i] = get_new_block() + 1;
+            inodes[dest_file_child_inode].i_blocks += 2;
             int bytes_read = fread(disk + indirect_block[i] * EXT2_BLOCK_SIZE, 1, EXT2_BLOCK_SIZE, source_file);
             inodes[dest_file_child_inode].i_size += bytes_read;
             blocks_needed -= 1;
