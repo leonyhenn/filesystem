@@ -100,7 +100,7 @@ void go_through_file(int parent_inode,char *victim_file_child_name){
                             int *indirect_block = (int *)(disk +  EXT2_BLOCK_SIZE * (inodes[possible->inode - 1].i_block)[12]);
                             for(int i = 0; i < 256; i++) {
                                 if(indirect_block[i] != 0) {
-                                    check_block_bitmap(indirect_block[i]);
+                                    check_block_bitmap(indirect_block[i] - 1);
                                 }
                             }
                             for(int i = 0; i < 256; i++) {
