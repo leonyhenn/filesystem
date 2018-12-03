@@ -72,9 +72,12 @@ void go_through_file(int parent_inode,char *victim_file_child_name){
             struct ext2_dir_entry *entry = (struct ext2_dir_entry*) (disk + 1024* inodes[parent_inode].i_block[j] + rec);
             //find gap between files, gap should be able to fit both files
             if(entry->rec_len >= (((sizeof(struct ext2_dir_entry)+entry->name_len) + 4 - ((sizeof(struct ext2_dir_entry)+entry->name_len) % 4))) + (((sizeof(struct ext2_dir_entry)+strlen(victim_file_child_name)) + 4 - ((sizeof(struct ext2_dir_entry)+strlen(victim_file_child_name)) % 4)))){
+                
                 int rest;
-                while(rest < entry->rec_len){
-                    struct ext2_dir_entry *possible = (struct ext2_dir_entry *)(disk + 1024* inodes[parent_inode].i_block[j] + rec + ((sizeof(struct ext2_dir_entry)+entry->name_len) + 4 - ((sizeof(struct ext2_dir_entry)+entry->name_len) % 4)) + rest);
+                while(rest < (entry->rec_len - ((sizeof(struct ext2_dir_entry)+entry->name_len) + 4 - ((sizeof(struct ext2_dir_entry)+entry->name_len) % 4)))){
+                    // struct ext2_dir_entry *possible = (struct ext2_dir_entry *)(disk + 1024* inodes[parent_inode].i_block[j] + rec + ((sizeof(struct ext2_dir_entry)+entry->name_len) + 4 - ((sizeof(struct ext2_dir_entry)+entry->name_len) % 4)) + rest);
+                    struct ext2_dir_entry *possible = (struct ext2_dir_entry *)(disk + 1024* inodes[parent_inode].i_block[j] + rec+ rest);
+                    printf("%s\n",possible->name );
                     if((strncmp(possible->name,victim_file_child_name,strlen(victim_file_child_name)) == 0) && (possible->name_len == strlen(victim_file_child_name)) && (possible->inode != 0)){
                         //found
                         printf("[%d] rec_len: %d, name_len: %d, name: %s\n",possible->inode,possible->rec_len,possible->name_len,possible->name);
