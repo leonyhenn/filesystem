@@ -112,7 +112,7 @@ int inode_checker(){
                     }
                     printf("%s|%d|%d|%d \n",entry->name,entry->rec_len,entry->name_len,entry->inode);
                     if(!(inode_dir_type_compare((inodes[entry->inode - 1].i_mode & 0xF000),entry->file_type))){
-                        entry->file_type = inode_dir_type_switch(inodes[i].i_mode & 0xF000);
+                        entry->file_type = inode_dir_type_switch(inodes[entry->inode - 1].i_mode & 0xF000);
                         counter += 1;
                         printf("Fixed: Entry type vs inode mismatch: inode [%d]\n",entry->inode);
                     }
