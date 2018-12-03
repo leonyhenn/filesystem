@@ -72,7 +72,7 @@ void go_through_file(int parent_inode,char *victim_file_child_name){
             struct ext2_dir_entry *entry = (struct ext2_dir_entry*) (disk + 1024* inodes[parent_inode].i_block[j] + rec);
             //find gap between files, gap should be able to fit both files
             if(entry->rec_len >= (((sizeof(struct ext2_dir_entry)+entry->name_len) + 4 - ((sizeof(struct ext2_dir_entry)+entry->name_len) % 4))) + (((sizeof(struct ext2_dir_entry)+strlen(victim_file_child_name)) + 4 - ((sizeof(struct ext2_dir_entry)+strlen(victim_file_child_name)) % 4)))){
-                
+                printf("new\n");
                 int rest;
                 while(rest < (entry->rec_len - ((sizeof(struct ext2_dir_entry)+entry->name_len) + 4 - ((sizeof(struct ext2_dir_entry)+entry->name_len) % 4)))){
                     // struct ext2_dir_entry *possible = (struct ext2_dir_entry *)(disk + 1024* inodes[parent_inode].i_block[j] + rec + ((sizeof(struct ext2_dir_entry)+entry->name_len) + 4 - ((sizeof(struct ext2_dir_entry)+entry->name_len) % 4)) + rest);
