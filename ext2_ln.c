@@ -156,6 +156,5 @@ int main(int argc, char *argv[]){
         }
     }else{
         int hardlink_inode = add_child(dest_path_parent_inode,dest_path_child_name,EXT2_S_IFREG,source_file_dir->inode - 1);
-        printf("source_file_inode :%d\n",hardlink_inode);
     }
 }   
