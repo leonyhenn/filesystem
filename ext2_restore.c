@@ -88,10 +88,15 @@ void go_through_file(int parent_inode,char *victim_file_child_name){
                             exit(EISDIR);
                         }
                         for (int i=0;i<12;i++){
-                            check_block_bitmap(inodes[possible->inode - 1].i_block[i] - 1);
+                            if(inodes[possible->inode - 1].i_block[i] != 0){
+                                check_block_bitmap(inodes[possible->inode - 1].i_block[i] - 1);
+                            }
                         }
                         for (int i=0;i<12;i++){
-                            restore_block_bitmap(inodes[possible->inode - 1].i_block[i] - 1);
+                            if(inodes[possible->inode - 1].i_block[i] != 0){
+                                restore_block_bitmap(inodes[possible->inode - 1].i_block[i] - 1);    
+                            }
+                            
                         }
                         restore_inode_bitmap(possible->inode - 1);
                         inodes[possible->inode - 1].i_links_count += 1;
