@@ -79,8 +79,10 @@ void go_through_file(int parent_inode,char *victim_file_child_name){
                     struct ext2_dir_entry *possible = (struct ext2_dir_entry *)(disk + 1024* inodes[parent_inode].i_block[j] + rec+ rest);
                     if((strncmp(possible->name,victim_file_child_name,strlen(victim_file_child_name)) == 0) && (possible->name_len == strlen(victim_file_child_name)) && (possible->inode != 0)){
                         //found
+                        printf("entry: [%d] rec_len: %d, name_len: %d, name: %s\n",entry->inode,entry->rec_len,entry->name_len,entry->name);
                         printf("possible: [%d] rec_len: %d, name_len: %d, name: %s\n",possible->inode,possible->rec_len,possible->name_len,possible->name);
                         check_inode_bitmap(possible->inode - 1);
+
                         if(possible->file_type == EXT2_FT_DIR){
                             fprintf(stderr, "Cannot restore directory. \n" );
                             exit(EISDIR);
@@ -95,6 +97,7 @@ void go_through_file(int parent_inode,char *victim_file_child_name){
                                 restore_block_bitmap(inodes[possible->inode - 1].i_block[i] - 1);    
                             }
                         }
+
                         if(inodes[possible->inode - 1].i_block[12] != 0){
                             check_block_bitmap(inodes[possible->inode - 1].i_block[12] - 1);
                             int *indirect_block = (int *)(disk +  EXT2_BLOCK_SIZE * (inodes[possible->inode - 1].i_block)[12]);
@@ -106,17 +109,19 @@ void go_through_file(int parent_inode,char *victim_file_child_name){
                             for(int i = 0; i < 256; i++) {
                                 if(indirect_block[i] == 0) {
                                     restore_block_bitmap(inodes[possible->inode - 1].i_block[12] - 1);
-                                    return;
+                                    break;
                                 }
                                 restore_block_bitmap(indirect_block[i] - 1);   
                                 
                             }
                         }
+
                         restore_inode_bitmap(possible->inode - 1);
                         inodes[possible->inode - 1].i_links_count += 1;
                         inodes[possible->inode - 1].i_dtime = 0;
                         entry->rec_len = ((sizeof(struct ext2_dir_entry)+entry->name_len) + 4 - ((sizeof(struct ext2_dir_entry)+entry->name_len) % 4));
-                        
+
+                        printf("%d\n",entry->rec_len);
                         return;
                     }
                     rest += 1;
