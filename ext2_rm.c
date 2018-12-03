@@ -69,7 +69,6 @@ int main(int argc, char *argv[]){
 
 }
 void remove_file(int parent_inode,int victim_inode){
-    inodes[victim_inode].i_links_count -= 1;
     for(int j = 0; j < (inodes[parent_inode].i_blocks / 2); j++) {
         int rec = 0;
         struct ext2_dir_entry *prev = NULL;
