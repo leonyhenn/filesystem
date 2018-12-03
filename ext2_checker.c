@@ -130,7 +130,7 @@ int inode_checker(){
             }
         }
     }
-    return 0;
+    return counter;
 }
 
 int free_inodes_checker(){
