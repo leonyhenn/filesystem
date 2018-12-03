@@ -86,8 +86,6 @@ void remove_file(int parent_inode,int victim_inode){
             rec += entry->rec_len;
             prev = entry;
         }
-
-      
     }
 }
 void free_block_bitmap(int block){

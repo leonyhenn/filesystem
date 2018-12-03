@@ -119,7 +119,7 @@ struct ext2_dir_entry* inode_find_dir(char* cur_dir,int cur_inode,int type){
       
       while(rec < EXT2_BLOCK_SIZE){
         struct ext2_dir_entry *entry = (struct ext2_dir_entry*) (disk + 1024* inodes[cur_inode].i_block[j] + rec);
-        if((strncmp(entry->name,cur_dir,entry->name_len)==0) && ((entry->file_type & inode_dir_type_switch(type))>0)){
+        if((strncmp(entry->name,cur_dir,entry->name_len)==0) && ((entry->file_type & inode_dir_type_switch((type & 0xF000)))>0)){
           return entry;
         }
         rec += entry->rec_len;
@@ -255,7 +255,7 @@ int add_child(int parent_inode,char *child_name,int child_type,int child_inode){
       while(rec < EXT2_BLOCK_SIZE){
         struct ext2_dir_entry *entry = (struct ext2_dir_entry*) (disk + 1024* inodes[parent_inode].i_block[j] + rec);
         
-        if((strcmp(entry->name,child_name) == 0) && inode_dir_type_compare(child_type,entry->file_type)){
+        if((strcmp(entry->name,child_name) == 0) && inode_dir_type_compare((child_type & 0xF000),entry->file_type)){
           fprintf(stderr, "Path/File already existed\n");
           exit(EEXIST);
         }
@@ -280,7 +280,7 @@ int add_child(int parent_inode,char *child_name,int child_type,int child_inode){
               child_inode = get_new_inode();
               init_inode(child_inode,child_type);
             }
-            init_entry(child_entry, child_inode, EXT2_BLOCK_SIZE - rec, child_name, inode_dir_type_switch(child_type));
+            init_entry(child_entry, child_inode, EXT2_BLOCK_SIZE - rec, child_name, inode_dir_type_switch((child_type  & 0xF000)));
             
             allocated = 1;
             return child_inode;
@@ -303,7 +303,7 @@ int add_child(int parent_inode,char *child_name,int child_type,int child_inode){
       init_inode(child_inode,child_type);
     }
     
-    init_entry(child_entry, child_inode, EXT2_BLOCK_SIZE, child_name, inode_dir_type_switch(child_type));
+    init_entry(child_entry, child_inode, EXT2_BLOCK_SIZE, child_name, inode_dir_type_switch((child_type & 0xF000)));
     
     return child_inode;
   }
