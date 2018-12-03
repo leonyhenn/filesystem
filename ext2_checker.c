@@ -44,9 +44,9 @@ int main(int argc, char *argv[]){
 
     // checker 1
     int free_inodes_counter = free_inodes_checker();
-    printf("free_inodes_counter: %d\n",free_inodes_counter);
+    
     int free_blocks_counter = free_blocks_checker();
-    printf("free_blocks_counter: %d\n",free_blocks_counter);
+    
 
     if(sb->s_free_inodes_count != free_inodes_counter){
         int difference = abs(free_inodes_counter -(int)sb->s_free_inodes_count);
@@ -104,13 +104,13 @@ int inode_checker(){
                 }
                 while(rec < EXT2_BLOCK_SIZE){
                     struct ext2_dir_entry *entry = (struct ext2_dir_entry*) (disk + 1024* inodes[i].i_block[j] + rec);
-                    // printf("inode:%d  i_mode: %d filetype: %d\n",i+1,inodes[i].i_mode ,entry->file_type);
+                    
                     rec += entry->rec_len;
-                    // printf("%d %d %d\n",inode_dir_type_compare((inodes[entry->inode - 1].i_mode & 0xF000 ),entry->file_type),inodes[entry->inode - 1].i_mode & 0xF000,entry->file_type );
+                    
                     if((entry->inode == 0) || (entry->inode > sb->s_inodes_count)){
                         continue;
                     }
-                    printf("%s|%d|%d|%d \n",entry->name,entry->rec_len,entry->name_len,entry->inode);
+                    
                     if(!(inode_dir_type_compare((inodes[entry->inode - 1].i_mode & 0xF000),entry->file_type))){
                         entry->file_type = inode_dir_type_switch(inodes[entry->inode - 1].i_mode & 0xF000);
                         counter += 1;

@@ -44,21 +44,20 @@ int main(int argc, char *argv[]){
 
     char *victim_file_parent_dir = get_parent_directory(path_to_victim);
     char *victim_file_child_name = get_child_name(path_to_victim);
-    printf("ext2_rm.c victim_file_parent_dir: %s\n",victim_file_parent_dir);
-    printf("ext2_rm.c victim_file_child_name: %s\n",victim_file_child_name);
+    
 
     int victim_file_parent_inode = find_inode(victim_file_parent_dir,EXT2_S_IFDIR);
     if(victim_file_parent_inode < 0){
         exit(ENOENT);
     }
-    printf("ext2_rm.c victim_file_parent_inode: %d\n",victim_file_parent_inode);
+    
 
     struct ext2_dir_entry* victim_file_child_dir = inode_find_dir(victim_file_child_name,victim_file_parent_inode,EXT2_S_IFREG);
     if(victim_file_child_dir == NULL){
         fprintf(stderr,"Victim file DNE.");
         exit(ENOENT);
     }
-    printf("ext2_rm.c victim_file_child_dir->name: %s\n",victim_file_child_dir->name);
+    
     
     if(victim_file_child_dir->file_type == EXT2_FT_DIR){
         fprintf(stderr, "Victim file is a directory\n");
@@ -78,6 +77,7 @@ void remove_file(int parent_inode,int victim_inode){
             struct ext2_dir_entry *entry = (struct ext2_dir_entry*) (disk + 1024* inodes[parent_inode].i_block[j] + rec);
             if(entry->inode == victim_inode){
                 if(prev == NULL){
+                    
                     entry->inode = 0;
                 }else{
                     prev->rec_len += entry->rec_len;
@@ -91,7 +91,6 @@ void remove_file(int parent_inode,int victim_inode){
     }
 }
 void free_block_bitmap(int block){
-  printf("%d\n",block);
   if(!(block_bitmap[block / 8] >> (block % 8) & 1)){
     fprintf(stderr, "%d: this block is not in use.\n",block );
     exit(EINVAL);

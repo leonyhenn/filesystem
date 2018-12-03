@@ -48,8 +48,7 @@ int main(int argc, char *argv[]){
     inode_bitmap =(unsigned char*) (disk + EXT2_BLOCK_SIZE * gd->bg_inode_bitmap);
     inodes   = (struct ext2_inode *)(disk + EXT2_BLOCK_SIZE * gd->bg_inode_table );
 
-    printf("%s\n",source_path );
-    printf("%s\n",dest_path);
+    
 
     //check path
     check_input_path(source_path,"ext2_ln");
@@ -58,27 +57,25 @@ int main(int argc, char *argv[]){
     //get parent dir
     char *source_path_parent_dir = get_parent_directory(source_path);
     char *source_path_child_name = get_child_name(source_path);
-    printf("source_path_parent_dir :%s\n",source_path_parent_dir);
-    printf("source_path_child_name :%s\n",source_path_child_name);
+    
 
 
     //get child dir
     char *dest_path_parent_dir = get_parent_directory(dest_path);
     char *dest_path_child_name = get_child_name(dest_path);
-    printf("dest_path_parent_dir :%s\n",dest_path_parent_dir);
-    printf("dest_path_child_name :%s\n",dest_path_child_name);
+    
 
     int source_path_parent_inode = find_inode(source_path_parent_dir,EXT2_S_IFDIR);
     if(source_path_parent_inode < 0){
         exit(ENOENT);
     }
-    printf("source_path_parent_inode :%d\n",source_path_parent_inode);
+    
 
     int dest_path_parent_inode = find_inode(dest_path_parent_dir,EXT2_S_IFDIR);
     if(dest_path_parent_inode < 0){
         exit(ENOENT);
     }
-    printf("dest_path_parent_inode :%d\n",dest_path_parent_inode);
+    
 
     //check if the link already existed
     struct ext2_dir_entry *dest_file_EEXIST_check = inode_find_dir(dest_path_child_name,dest_path_parent_inode,(symlink == 1)? EXT2_S_IFLNK:EXT2_S_IFREG);

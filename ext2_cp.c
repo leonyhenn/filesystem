@@ -65,14 +65,13 @@ int main(int argc, char *argv[]){
     //dest handling
     char *dest_file_parent_dir = get_parent_directory(path_to_dest);
     char *dest_file_child_name = get_child_name(path_to_dest);
-    printf("ext2_cp.c dest_file_parent_dir: %s\n",dest_file_parent_dir);
-    printf("ext2_cp.c dest_file_child_name: %s\n",dest_file_child_name);
+    
 
     int dest_file_parent_inode = find_inode(dest_file_parent_dir,EXT2_S_IFDIR);
     if(dest_file_parent_inode < 0){
         exit(ENOENT);
     }
-    printf("ext2_cp.c dest_file_parent_inode: %d\n",dest_file_parent_inode);
+    
 
     struct ext2_dir_entry* dest_file_child_dir = inode_find_dir(dest_file_child_name,dest_file_parent_inode,EXT2_S_IFREG);
     if(dest_file_child_dir != NULL){
@@ -81,7 +80,7 @@ int main(int argc, char *argv[]){
     }
 
     int dest_file_child_inode = add_child(dest_file_parent_inode, dest_file_child_name, EXT2_S_IFREG, -1);
-    printf("ext2_cp.c dest_file_child_inode: %d\n",dest_file_child_inode);
+    
 
     copy_file(dest_file_child_inode, source_file,blocks_needed);
 
