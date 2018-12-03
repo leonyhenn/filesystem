@@ -116,6 +116,7 @@ struct ext2_dir_entry* inode_find_dir(char* cur_dir,int cur_inode,int type){
   for(int j = 0; j < 12; j++) {
     if((inodes[cur_inode].i_block)[j] != 0){
       int rec = 0;
+      
       while(rec < EXT2_BLOCK_SIZE){
         struct ext2_dir_entry *entry = (struct ext2_dir_entry*) (disk + 1024* inodes[cur_inode].i_block[j] + rec);
         if((strncmp(entry->name,cur_dir,entry->name_len)==0) && ((entry->file_type & inode_dir_type_switch(type))>0)){
@@ -123,9 +124,9 @@ struct ext2_dir_entry* inode_find_dir(char* cur_dir,int cur_inode,int type){
         }
         rec += entry->rec_len;
       }
-
     }
   }
+
   return NULL;
 }
 
@@ -305,3 +306,27 @@ int add_child(int parent_inode,char *child_name,int child_type,int child_inode){
   return -1;
 }
 
+void check_block_bitmap(int block){
+  if(block_bitmap[block / 8] >> (block % 8) & 1){
+    fprintf(stderr, "block %d is in use. Cannot restore file.\n",block );
+    exit(EINVAL);
+  }
+}
+
+void check_inode_bitmap(int inode){
+  if((inode_bitmap[inode / 8] >> (inode % 8) & 1) || (inode < (EXT2_GOOD_OLD_FIRST_INO - 1) && inode > (EXT2_ROOT_INO - 1) )){
+    fprintf(stderr, "inode %d is in use. Cannot restore file\n",inode );
+    exit(EINVAL);
+  }
+}
+void restore_block_bitmap(int block){
+  block_bitmap[block / 8] |=  (1<<(block % 8)); 
+
+  sb->s_free_blocks_count--; 
+  gd->bg_free_blocks_count--;
+}
+void restore_inode_bitmap(int inode){
+  inode_bitmap[inode / 8] |=  (1<<(inode % 8)); 
+  sb->s_free_inodes_count--; 
+  gd->bg_free_inodes_count--;
+}

@@ -15,7 +15,7 @@ unsigned char* block_bitmap;
 unsigned char* inode_bitmap;
 struct ext2_inode *inodes; 
 
-void go_through_file(int parent_inode);
+void go_through_file(int parent_inode,char *victim_file_child_name);
 
 int main(int argc, char *argv[]){
     if(argc != 3){
@@ -51,27 +51,55 @@ int main(int argc, char *argv[]){
     printf("ext2_rm.c victim_file_parent_inode: %d\n",victim_file_parent_inode);
 
     struct ext2_dir_entry* victim_file_child_dir = inode_find_dir(victim_file_child_name,victim_file_parent_inode,EXT2_S_IFREG);
+
     if(victim_file_child_dir != NULL){
         fprintf(stderr,"Victim file still exist.");
         exit(ENOENT);
     }
-    printf("ext2_rm.c victim_file_child_dir->name: %s\n",victim_file_child_dir->name);
     
     
-    go_through_file(victim_file_parent_inode);
+    
+    go_through_file(victim_file_parent_inode,victim_file_child_name);
 
 
 }
-void go_through_file(int parent_inode){
+
+void go_through_file(int parent_inode,char *victim_file_child_name){
     for(int j = 0; j < (inodes[parent_inode].i_blocks / 2); j++) {
         int rec = 0;
         struct ext2_dir_entry *prev = NULL;
         while(rec < EXT2_BLOCK_SIZE){
             struct ext2_dir_entry *entry = (struct ext2_dir_entry*) (disk + 1024* inodes[parent_inode].i_block[j] + rec);
-            printf("entry->name: %s, rec_len: %d, name_len: %d\n",entry->name,entry->rec_len,entry->name_len );
+            //find gap between files, gap should be able to fit both files
+            if(entry->rec_len >= (((sizeof(struct ext2_dir_entry)+entry->name_len) + 4 - ((sizeof(struct ext2_dir_entry)+entry->name_len) % 4))) + (((sizeof(struct ext2_dir_entry)+strlen(victim_file_child_name)) + 4 - ((sizeof(struct ext2_dir_entry)+strlen(victim_file_child_name)) % 4)))){
+                int rest;
+                while(rest < entry->rec_len){
+                    struct ext2_dir_entry *possible = (struct ext2_dir_entry *)(disk + 1024* inodes[parent_inode].i_block[j] + rec + ((sizeof(struct ext2_dir_entry)+entry->name_len) + 4 - ((sizeof(struct ext2_dir_entry)+entry->name_len) % 4)) + rest);
+                    if((strncmp(possible->name,victim_file_child_name,strlen(victim_file_child_name)) == 0) && (possible->name_len == strlen(victim_file_child_name)) && (possible->inode != 0)){
+                        //found
+                        printf("[%d] rec_len: %d, name_len: %d, name: %s\n",possible->inode,possible->rec_len,possible->name_len,possible->name);
+                        check_inode_bitmap(possible->inode - 1);
+                        if(possible->file_type == EXT2_FT_DIR){
+                            fprintf(stderr, "Cannot restore directory. \n" );
+                            exit(EISDIR);
+                        }
+                        for (int i=0;i<12;i++){
+                            check_block_bitmap(inodes[possible->inode - 1].i_block[i] - 1);
+                        }
+                        for (int i=0;i<12;i++){
+                            restore_block_bitmap(inodes[possible->inode - 1].i_block[i] - 1);
+                        }
+                        restore_inode_bitmap(possible->inode - 1);
+                        inodes[possible->inode - 1].i_dtime = 0;
+                        entry->rec_len = ((sizeof(struct ext2_dir_entry)+entry->name_len) + 4 - ((sizeof(struct ext2_dir_entry)+entry->name_len) % 4)) + rest;
+                        return;
+                    }
+                    rest += 1;
+                }
+            }
             rec += entry->rec_len;
         }
-
-      
     }
+    fprintf(stderr, "%s\n","Cannot restore file" );
+    exit(1);
 }

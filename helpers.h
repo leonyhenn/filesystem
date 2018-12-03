@@ -28,3 +28,7 @@ int inode_dir_type_compare(int inode_file_type, int dir_file_type);
 void init_inode(int inode_number, int inode_type);
 void init_entry(struct ext2_dir_entry *entry, int inode_number, int rec_len, char* name, int file_type);
 int inode_dir_type_switch(int inode_file_type);
+void check_block_bitmap(int block);
+void check_inode_bitmap(int inode);
+void restore_block_bitmap(int block);
+void restore_inode_bitmap(int inode);

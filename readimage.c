@@ -68,11 +68,11 @@ int main(int argc, char **argv) {
     for (int i=0;i<sb->s_inodes_count;i++){
         if((inode_bitmap[i / 8] >> (i % 8) & 1) == 1){
             if(i == EXT2_ROOT_INO - 1 || i > EXT2_GOOD_OLD_FIRST_INO - 1){
-                if(inodes[i].i_mode & EXT2_S_IFREG){
+                if((inodes[i].i_mode & 0xF000) == EXT2_S_IFREG){
                     type = 'f';
-                }else if (inodes[i].i_mode & EXT2_S_IFDIR){
+                }else if ((inodes[i].i_mode & 0xF000)== EXT2_S_IFDIR){
                     type = 'd';      
-                }else if(inodes[i].i_mode & EXT2_S_IFLNK){
+                }else if((inodes[i].i_mode & 0xF000)== EXT2_S_IFLNK){
                     type = 'l';
                 }
                 printf("[%d] type: %c size: %d links: %d blocks: %d\n", i + 1, type, (inodes+i)->i_size, inodes[i].i_links_count, inodes[i].i_blocks);
@@ -94,7 +94,6 @@ int main(int argc, char **argv) {
     for (int i=0;i<sb->s_inodes_count;i++){
         if((inode_bitmap[i / 8] >> (i % 8) & 1) == 1){
             if(i == EXT2_ROOT_INO - 1 || i > EXT2_GOOD_OLD_FIRST_INO - 1){
-                
                 for(int j = 0; j < 15; j++) {
                     if((inodes[i].i_block)[j] != 0){
                         if(inodes[i].i_mode & EXT2_S_IFDIR){
@@ -102,11 +101,11 @@ int main(int argc, char **argv) {
                             int rec = 0;
                             while(rec < EXT2_BLOCK_SIZE){
                                 struct ext2_dir_entry *entry = (struct ext2_dir_entry*) (disk + 1024* inodes[i].i_block[j] + rec);
-                                if(entry->file_type & EXT2_FT_REG_FILE){
+                                if(entry->file_type == EXT2_FT_REG_FILE){
                                     type = 'f';
-                                }else if (entry->file_type & EXT2_FT_DIR){
+                                }else if (entry->file_type == EXT2_FT_DIR){
                                     type = 'd';      
-                                }else if(entry->file_type & EXT2_FT_DIR){
+                                }else if(entry->file_type == EXT2_FT_DIR){
                                     type = '0';
                                 }
                                 printf("Inode: %d rec_len: %d name_len: %d type= %c name=%.*s\n",entry->inode,entry->rec_len,entry->name_len,type,entry->name_len, entry->name);
@@ -117,7 +116,6 @@ int main(int argc, char **argv) {
                 }
             }
         }
-
     }
     
     return 0;
