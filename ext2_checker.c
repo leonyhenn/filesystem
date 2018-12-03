@@ -81,7 +81,8 @@ int main(int argc, char *argv[]){
 int inode_checker(){
     int counter = 0;
     for (int i=0;i<sb->s_inodes_count;i++){
-        if ((i > (EXT2_GOOD_OLD_FIRST_INO - 1)|| i == (EXT2_ROOT_INO - 1)) && (inodes[i].i_blocks != 0) && (((inodes[i].i_mode & 0xF000) == EXT2_S_IFDIR) || ((inodes[i].i_mode & 0xF000) == EXT2_S_IFREG) || ((inodes[i].i_mode & 0xF000) == EXT2_S_IFLNK))) {
+        if ((i > (EXT2_GOOD_OLD_FIRST_INO - 2)|| i == (EXT2_ROOT_INO - 1)) && (inodes[i].i_blocks != 0) && (((inodes[i].i_mode & 0xF000) == EXT2_S_IFDIR) || ((inodes[i].i_mode & 0xF000) == EXT2_S_IFREG) || ((inodes[i].i_mode & 0xF000) == EXT2_S_IFLNK))) {
+
             if(!(check_inode_bitmap_reverse(i))){
                 restore_inode_bitmap(i);
                 counter +=1;
@@ -94,8 +95,10 @@ int inode_checker(){
             }
             int inconsistent_blocks = 0;
             for(int j = 0; j < (inodes[i].i_blocks / 2); j++) {
+
                 int rec = 0;
                 if(!(check_block_bitmap_reverse(inodes[i].i_block[j] - 1))){
+
                     restore_block_bitmap(inodes[i].i_block[j] - 1);
                     counter += 1;
                     inconsistent_blocks += 1;
