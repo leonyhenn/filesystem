@@ -17,12 +17,10 @@ struct ext2_inode *inodes;
 
 int free_inodes_checker();
 int free_blocks_checker();
-int file_type_checker();
-int dir_inode_checker();
-int data_block_checker();
-int check_data_block(int inode);
-int i_dtime_checker();
+int inode_checker();
 int check_block_bitmap_reverse(int block);
+int check_inode_bitmap_reverse(int inode);
+
 
 int main(int argc, char *argv[]){
     if(argc != 2){
@@ -76,161 +74,49 @@ int main(int argc, char *argv[]){
         total_counter += 1;
     }
 
-    total_counter += file_type_checker();
-    total_counter += dir_inode_checker();
-    total_counter += i_dtime_checker();
-    total_counter += data_block_checker();
+    total_counter += inode_checker();
+
 }
-int check_data_block(int inode){
-    int fault = 0;
-    for(int i = 0; i < 12; ++i) {
-        if(inodes[inode].i_block[i] != 0){
-            if (!(check_block_bitmap_reverse(inodes[inode].i_block[i] - 1))){
-                restore_block_bitmap(inodes[inode].i_block[i] - 1);
-                fault += 1;
-            }
-        }else{
-            return fault;
-        }
-    }
-    if(inodes[inode].i_block[12] != 0){
-        int *indirect_block = (int *)(disk +  EXT2_BLOCK_SIZE * (inodes[inode].i_block)[12]);
-        for(int i = 0; i < 256; i++) {
-            if(indirect_block[i] == 0) {
-                if (!(check_block_bitmap_reverse(inodes[inode].i_block[12] - 1))){
-                    restore_block_bitmap(inodes[inode].i_block[12] - 1);
-                    fault += 1;
-                }
-                return fault;
-            }
-            if (!(check_block_bitmap_reverse(inodes[inode].i_block[12] - 1))){
-                restore_block_bitmap(inodes[inode].i_block[12] - 1);
-                fault += 1;
-            }
-        }
-    }
-    return fault;
-}
-int data_block_checker(){
+
+int inode_checker(){
     int counter = 0;
     for (int i=0;i<sb->s_inodes_count;i++){
-        if((inode_bitmap[i / 8] >> (i % 8) & 1) == 1){
-            if(i == EXT2_ROOT_INO - 1 || i > EXT2_GOOD_OLD_FIRST_INO - 1){
-                for(int j = 0; j < 15; j++) {
-                    if((inodes[i].i_block)[j] != 0){
-                        if(inodes[i].i_mode & EXT2_S_IFDIR){
-                            int rec = 0;
-                            while(rec < EXT2_BLOCK_SIZE){
-                                struct ext2_dir_entry *entry = (struct ext2_dir_entry*) (disk + 1024* inodes[i].i_block[j] + rec);
-                                int result = check_data_block(entry->inode-1);
-                                if(!(result == 0)){
-                                    counter += result;
-                                    printf("Fixed: %d in-use data blocks not marked in data bitmap for inode: [%d]\n",result,entry->inode);
-                                }
-                                rec += entry->rec_len;
-                            }
-                        }
-                    }
+        if ((i > (EXT2_GOOD_OLD_FIRST_INO - 1)|| i == (EXT2_ROOT_INO - 1)) && (inodes[i].i_blocks != 0) && (((inodes[i].i_mode & 0xF000) == EXT2_S_IFDIR) || ((inodes[i].i_mode & 0xF000) == EXT2_S_IFREG) || ((inodes[i].i_mode & 0xF000) == EXT2_S_IFLNK))) {
+            if(!(check_inode_bitmap_reverse(i))){
+                restore_inode_bitmap(i);
+                counter +=1;
+                printf("Fixed: inode [%d] not marked as in-use\n",i+1);
+            }
+            if(!(inodes[i].i_dtime == 0)){
+                inodes[i].i_dtime = 0;
+                counter +=1;
+                printf("Fixed: valid inode marked for deletion: [%d]\n",i+1);
+            }
+            int inconsistent_blocks = 0;
+            for(int j = 0; j < (inodes[i].i_blocks / 2); j++) {
+                int rec = 0;
+                if(!(check_block_bitmap_reverse(inodes[i].i_block[j] - 1))){
+                    restore_block_bitmap(inodes[i].i_block[j] - 1);
+                    counter += 1;
+                    inconsistent_blocks += 1;
                 }
+                while(rec < EXT2_BLOCK_SIZE){
+                    struct ext2_dir_entry *entry = (struct ext2_dir_entry*) (disk + 1024* inodes[i].i_block[j] + rec);
+                    if(!(inode_dir_type_compare(inodes[i].i_mode,entry->file_type))){
+                        entry->file_type = inode_dir_type_switch(inodes[i].i_mode);
+                        counter += 1;
+                        printf("Fixed: Entry type vs inode mismatch: inode [%d]\n",i+1);
+                    }
+                    rec += entry->rec_len;
+                }
+            }
+            if(inconsistent_blocks){
+                printf("Fixed: %d in-use data blocks not marked in data bitmap for inode: [%d]\n", inconsistent_blocks,i+1);
             }
         }
     }
-    return counter;
-}
-int i_dtime_checker(){
-    int counter = 0;
-    for (int i=0;i<sb->s_inodes_count;i++){
-        if((inode_bitmap[i / 8] >> (i % 8) & 1) == 1){
-            if(i == EXT2_ROOT_INO - 1 || i > EXT2_GOOD_OLD_FIRST_INO - 1){
-                for(int j = 0; j < 15; j++) {
-                    if((inodes[i].i_block)[j] != 0){
-                        if(inodes[i].i_mode & EXT2_S_IFDIR){
-                            int rec = 0;
-                            while(rec < EXT2_BLOCK_SIZE){
-                                struct ext2_dir_entry *entry = (struct ext2_dir_entry*) (disk + 1024* inodes[i].i_block[j] + rec);
-                                if(!(inodes[entry->inode-1].i_dtime == 0)){
-                                    inodes[entry->inode-1].i_dtime = 0;
-                                    counter += 1;
-                                    printf("Fixed: valid inode marked for deletion: [%d]\n", entry->inode);
-                                }
-                                rec += entry->rec_len;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return counter;
-}
-int check_block_bitmap_reverse(int block){
-  if(!(block_bitmap[block / 8] >> (block % 8) & 1)){
     return 0;
-  }
-  return 1;
 }
-
-int check_inode_bitmap_reverse(int inode){
-  if(!(inode_bitmap[inode / 8] >> (inode % 8) & 1)){
-    return 0;
-  }
-  return 1;
-}
-
-int dir_inode_checker(){
-    int counter = 0;
-    for (int i=0;i<sb->s_inodes_count;i++){
-        if((inode_bitmap[i / 8] >> (i % 8) & 1) == 1){
-            if(i == EXT2_ROOT_INO - 1 || i > EXT2_GOOD_OLD_FIRST_INO - 1){
-                for(int j = 0; j < 15; j++) {
-                    if((inodes[i].i_block)[j] != 0){
-                        if(inodes[i].i_mode & EXT2_S_IFDIR){
-                            int rec = 0;
-                            while(rec < EXT2_BLOCK_SIZE){
-                                struct ext2_dir_entry *entry = (struct ext2_dir_entry*) (disk + 1024* inodes[i].i_block[j] + rec);
-                                if(!(check_inode_bitmap_reverse(entry->inode - 1))){
-                                    restore_inode_bitmap(entry->inode - 1);
-                                    counter += 1;
-                                    printf("Fixed: inode [%d] not marked as in-use\n", entry->inode);
-                                }
-                                rec += entry->rec_len;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return counter;
-}
-
-int file_type_checker(){
-    int counter = 0;
-    for (int i=0;i<sb->s_inodes_count;i++){
-        if((inode_bitmap[i / 8] >> (i % 8) & 1) == 1){
-            if(i == EXT2_ROOT_INO - 1 || i > EXT2_GOOD_OLD_FIRST_INO - 1){
-                for(int j = 0; j < 15; j++) {
-                    if((inodes[i].i_block)[j] != 0){
-                        if(inodes[i].i_mode & EXT2_S_IFDIR){
-                            int rec = 0;
-                            while(rec < EXT2_BLOCK_SIZE){
-                                struct ext2_dir_entry *entry = (struct ext2_dir_entry*) (disk + 1024* inodes[i].i_block[j] + rec);
-                                if(!(inode_dir_type_compare(inodes[entry->inode - 1].i_mode,entry->file_type))){
-                                    entry->file_type = inode_dir_type_switch(inodes[entry->inode - 1].i_mode);
-                                    counter += 1;
-                                     printf("Fixed: Entry type vs inode mismatch: inode [%d]\n", entry->inode);
-                                }
-                                rec += entry->rec_len;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return counter;
-}
-
 
 int free_inodes_checker(){
     int free_inodes_counter = 0;
@@ -258,4 +144,18 @@ int free_blocks_checker(){
         }
     }
     return free_blocks_counter;
+}
+
+int check_block_bitmap_reverse(int block){
+  if(!(block_bitmap[block / 8] >> (block % 8) & 1)){
+    return 0;
+  }
+  return 1;
+}
+
+int check_inode_bitmap_reverse(int inode){
+  if(!(inode_bitmap[inode / 8] >> (inode % 8) & 1)){
+    return 0;
+  }
+  return 1;
 }
