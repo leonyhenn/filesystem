@@ -75,6 +75,11 @@ int main(int argc, char *argv[]){
     }
 
     total_counter += inode_checker();
+    if(total_counter){
+        printf("%d file system inconsistencies repaired!\n",total_counter);
+    }else{
+        printf("No file system inconsistencies detected!\n");
+    }
 
 }
 
