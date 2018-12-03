@@ -80,7 +80,7 @@ void go_through_file(int parent_inode,char *victim_file_child_name){
                     printf("%s\n",possible->name );
                     if((strncmp(possible->name,victim_file_child_name,strlen(victim_file_child_name)) == 0) && (possible->name_len == strlen(victim_file_child_name)) && (possible->inode != 0)){
                         //found
-                        printf("[%d] rec_len: %d, name_len: %d, name: %s\n",possible->inode,possible->rec_len,possible->name_len,possible->name);
+                        printf("possible: [%d] rec_len: %d, name_len: %d, name: %s\n",possible->inode,possible->rec_len,possible->name_len,possible->name);
                         check_inode_bitmap(possible->inode - 1);
                         if(possible->file_type == EXT2_FT_DIR){
                             fprintf(stderr, "Cannot restore directory. \n" );
@@ -93,13 +93,16 @@ void go_through_file(int parent_inode,char *victim_file_child_name){
                             restore_block_bitmap(inodes[possible->inode - 1].i_block[i] - 1);
                         }
                         restore_inode_bitmap(possible->inode - 1);
+                        inodes[possible->inode - 1].i_links_count += 1;
                         inodes[possible->inode - 1].i_dtime = 0;
-                        entry->rec_len = ((sizeof(struct ext2_dir_entry)+entry->name_len) + 4 - ((sizeof(struct ext2_dir_entry)+entry->name_len) % 4)) + rest;
+                        entry->rec_len = ((sizeof(struct ext2_dir_entry)+entry->name_len) + 4 - ((sizeof(struct ext2_dir_entry)+entry->name_len) % 4));
+                        
                         return;
                     }
                     rest += 1;
                 }
             }
+            
             rec += entry->rec_len;
         }
     }
