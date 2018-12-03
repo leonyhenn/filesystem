@@ -106,6 +106,7 @@ int inode_checker(){
                 while(rec < EXT2_BLOCK_SIZE){
                     struct ext2_dir_entry *entry = (struct ext2_dir_entry*) (disk + 1024* inodes[i].i_block[j] + rec);
                     if(!(inode_dir_type_compare(inodes[i].i_mode,entry->file_type))){
+
                         entry->file_type = inode_dir_type_switch(inodes[i].i_mode);
                         counter += 1;
                         printf("Fixed: Entry type vs inode mismatch: inode [%d]\n",i+1);

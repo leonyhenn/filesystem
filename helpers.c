@@ -201,13 +201,19 @@ int find_last_dir(struct ext2_dir_entry *entry, int found, int rec){
 }
 
 int inode_dir_type_compare(int inode_file_type, int dir_file_type){
-  int result;
+  int result = 0;
   if(inode_file_type == EXT2_S_IFLNK){
-    result =  (dir_file_type == EXT2_FT_SYMLINK);
+    if(dir_file_type == EXT2_FT_SYMLINK){
+      result = 1;
+    }
   }else if(inode_file_type == EXT2_S_IFREG){
-    result = (dir_file_type == EXT2_FT_REG_FILE);
+    if(dir_file_type == EXT2_FT_REG_FILE){
+      result = 1;
+    }
   }else if(inode_file_type == EXT2_S_IFDIR){
-    result = (dir_file_type == EXT2_FT_DIR);
+    if(dir_file_type == EXT2_FT_DIR){
+      result = 1;
+    }
   }
   return result;
 }
