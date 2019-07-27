@@ -2,7 +2,7 @@
 
 ## School Assignment
 
-Implemented mutiple functions on a ext2 file system in C language, includes: 
+Implemented multiple functions on a ext2 file system in C language, includes: 
   - [make directory](https://github.com/leonyhenn/filesystem/blob/master/ext2_mkdir.c), equivalent to mkdir in Linux
   - [copy](https://github.com/leonyhenn/filesystem/blob/master/ext2_cp.c), equivalent to cp in Linux
   - [create hard link](https://github.com/leonyhenn/filesystem/blob/master/ext2_ln.c), equivalent to ln in Linux
