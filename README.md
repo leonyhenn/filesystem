@@ -3,12 +3,12 @@
 ## School Assignment
 
 Implemented mutiple functions on a ext2 file system in C language, includes: 
-  - (make directory)[https://github.com/leonyhenn/filesystem/blob/master/ext2_mkdir.c], equivalent to mkdir in Linux
-  - (copy)[https://github.com/leonyhenn/filesystem/blob/master/ext2_cp.c], equivalent to cp in Linux
-  - (create hard link)[https://github.com/leonyhenn/filesystem/blob/master/ext2_ln.c], equivalent to ln in Linux
-  - (rm)[https://github.com/leonyhenn/filesystem/blob/master/ext2_rm.c], equivalent to remove in Linux
-  - (restore)[https://github.com/leonyhenn/filesystem/blob/master/ext2_restore.c], to restore a removed file
-  - (checker)[https://github.com/leonyhenn/filesystem/blob/master/ext2_checker.c], to check if the disk is in right format
+  - [make directory](https://github.com/leonyhenn/filesystem/blob/master/ext2_mkdir.c), equivalent to mkdir in Linux
+  - [copy](https://github.com/leonyhenn/filesystem/blob/master/ext2_cp.c), equivalent to cp in Linux
+  - [create hard link](https://github.com/leonyhenn/filesystem/blob/master/ext2_ln.c), equivalent to ln in Linux
+  - [rm](https://github.com/leonyhenn/filesystem/blob/master/ext2_rm.c), equivalent to remove in Linux
+  - [restore](https://github.com/leonyhenn/filesystem/blob/master/ext2_restore.c), to restore a removed file
+  - [checker](https://github.com/leonyhenn/filesystem/blob/master/ext2_checker.c), to check if the disk is in right format
 
 I tried to make the code as highly modulized and low cohesive as possible, so check out my utility functions:
   - (helpers)[https://github.com/leonyhenn/filesystem/blob/master/helpers.c]
