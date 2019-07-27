@@ -18,3 +18,4 @@ There are only a little comments in those code, it is not that I do not want to 
  
 Also, please don't mind the commit comment being so meaningless, this is due to the editor in my school's computer quits all the time, and I have to use Github to transfer the code back and forth.
   
+### Mark : 81.8%
